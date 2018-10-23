@@ -8,7 +8,7 @@ import { actionCreators } from './actions/authActions';
 
 class Startup extends Component {
 
-    componentDidMount() {
+    componentWillMount() {
 
       //check if we have a token in local storage
       //will also need to verify the token and possibly refresh?

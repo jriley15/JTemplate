@@ -1,6 +1,6 @@
 ﻿import React from 'react';
-import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink, Button } from 'reactstrap';
-import './NavMenu.css';
+import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem} from 'reactstrap';
+import '../resources/css/NavMenu.css';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { bindActionCreators } from 'redux';

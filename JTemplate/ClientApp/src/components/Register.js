@@ -1,67 +1,143 @@
 import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 import { actionCreators } from '../actions/registerActions';
-import "./Register.css";
+import "../resources/css/Register.css";
+import renderErrors from "./sub/Errors";
 
 class Register extends Component {
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+
+      inputFields: [
+        { 
+          id: 'FirstName',
+          name: 'First Name',
+          required: false 
+        },
+        { 
+          id: 'LastName',
+          name: 'Last Name',
+          required: false 
+        },
+        {
+          id: 'Email',
+          name: 'Email Address',
+          required: true
+        },
+        { 
+          id: 'Password',
+          name: 'Password',
+          type: 'password',
+          required: true 
+        },
+        { 
+          id: 'PasswordConfirm',
+          name: 'Confirm Password',
+          type: 'password',
+          required: true 
+        }
+      ]
+    };
+
+    this.handleInputChange = this.handleInputChange.bind(this);
+    this.submitRegister = this.submitRegister.bind(this);
+    this.renderForm = this.renderForm.bind(this);
+    this.renderSuccess = this.renderSuccess.bind(this);
+    this.setInputField = this.setInputField.bind(this);
+  }
 
 
   componentWillMount() {
-
+    this.props.mount();
   }
 
   componentWillReceiveProps(nextProps) {
-
   }
 
-  handleChange(e) {
-    const { name, value } = e.target;
-    this.setState({ [name]: value });
+  handleInputChange = e => {
+    /*this.setState({
+      [e.target.id]: { ...this.state[e.target.id], value: e.target.value }
+    });
+    */
+    this.setInputField(e.target.id, e.target.value);
+  };
+
+
+  setInputField(id, value) {
+    let inputFieldState = [...this.state.inputFields];
+    const index = inputFieldState.findIndex(inputField => inputField.id === id);
+    inputFieldState[index].value = value;
+    this.setState({inputFields: inputFieldState});
   }
 
-  renderRegister() {
+  submitRegister = e => {
+    e.preventDefault();
+    this.props.register(this.state.inputFields);
+  };
+
+
+  render() {
+    if (this.props.success) {
+      return (<this.renderSuccess />);
+    } else {
+      return (<this.renderForm />);
+    }
+  }
+
+  renderSuccess() {
     return (
       <div className="register-container">
         <div className="container">
-        <div className="row text-center">
-          <div className="col-sm-9 col-md-7 col-lg-5 mx-auto">
-            <form className="form-register">
-            
-            <h1 className="h3 mb-3 font-weight-normal">Create an account</h1>
-  
-            <label htmlFor="inputFirstName" className="sr-only">First Name</label>
-            <input type="firstName" id="inputFirstName" className="form-control" placeholder="First Name" autoFocus=""/>
-  
-            <label htmlFor="inputLastName" className="sr-only">Last Name</label>
-            <input type="lastName" id="inputLastNameName" className="form-control" placeholder="Last Name" autoFocus=""/>
-  
-            <label htmlFor="inputEmail" className="sr-only">Email address</label>
-            <input type="email" id="inputEmail" className="form-control" placeholder="Email address" required autoFocus=""/>
-  
-            <label htmlFor="inputPassword" className="sr-only">Password</label>
-            <input type="password" id="inputPassword" className="form-control" placeholder="Password" required/>
-  
-            <button className="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
-            <p className="mt-5 mb-3 text-muted">© 2017-2018</p>
-          </form>
+          <div className="row text-center">
+            <div className="col-sm-9 col-md-7 col-lg-5 mx-auto">
+              <form className="form-register">
+
+                <h1 className="h3 mb-3 font-weight-normal">Successfully registered</h1>
+                <p>Your account has been created, <a href="/login">login here.</a></p>
+
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     );
   }
 
-  render() {
+
+
+  renderForm() {
+
     return (
-      <div>
-        {this.renderRegister()}
+      <div className="register-container">
+        <div className="container">
+          <div className="row text-center">
+            <div className="col-sm-9 col-md-7 col-lg-5 mx-auto">
+              <form className="form-register">
+                <h1 className="h3 mb-3 font-weight-normal">Create an account</h1>
+
+                {renderErrors('*', this.props.errors)}
+
+                {this.state.inputFields.map(inputField =>(
+                  <div className="form-group left" key={inputField.id}>
+                    <label htmlFor={inputField.id}>{inputField.name}</label>
+                    <input id={inputField.id} className="form-control" type={inputField.type ? inputField.type : "text"} placeholder={"Enter "+inputField.name} autoFocus="" onChange={this.handleInputChange} />
+                    {renderErrors(inputField.id, this.props.errors)}
+                  </div>
+                ))}
+
+                <button className="btn btn-lg btn-primary btn-block" onClick={this.submitRegister}>{this.props.loggingIn ? "Loading.." : "Sign Up"}</button>
+                <p className="mt-5 mb-3 text-muted">© 2017-2018</p>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
-
 }
 
 export default connect(

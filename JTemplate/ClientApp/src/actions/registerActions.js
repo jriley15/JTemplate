@@ -1,39 +1,59 @@
 import constants from '../constants/registerConstants';
 import apiURL from '../constants/apiURL';
 import axios from 'axios';
-import { push } from 'react-router-redux'
 
-
-const AUTH_KEY = 'AUTH'
 
 export const actionCreators = {
 
+    register: inputFields => async (dispatch, getState) => {
 
-    register: user => async (dispatch, getState) => {    
+        dispatch({ type: constants.REGISTER_REQUEST });
 
-      dispatch({ type: constants.REGISTER_REQUEST });
-      const url = apiURL+'/User/Login';
-      const response = await axios.post(url, {Email: user.Email, Password: user.Password}, {
-          headers: {
-              'Content-Type': 'application/json',
-          }
-          
-      }).then(function (response) {
-          const auth = response.data;
-          dispatch({ type: constants.REGISTER_SUCCESS, auth });
-          dispatch(push('/'));
-          //store auth in localstorage
-          localStorage.setItem(AUTH_KEY, auth);  
+        let errors = [];
+
+        inputFields.forEach(inputField => {       
+            if (!inputField.value && inputField.required) {
+                errors.push({key: inputField.id, message: 'Required Field'});
+            } 
+        });
         
-      })
+        if (errors === undefined || errors.length === 0) {
+            let request = {};
+            inputFields.forEach(inputField => {       
+                request = {...request, [inputField.id]: inputField.value}
+            });
 
-      .catch(function (error) {
-          const errors = error.response.data.errors;
-          dispatch({ type: constants.REGISTER_FAILURE, errors });
-      });
-    }
+            const url = apiURL + '/User/Register';
+            await axios.post(url, request, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+
+            }).then(function (response) {
+                //const auth = response.data
+                dispatch({ type: constants.REGISTER_SUCCESS });
+                //dispatch(push('/'));
+
+                //console.log('success: ', response);
+
+            })
+            .catch(function (error) {
+                errors = error.response.data.errors;
+                dispatch({ type: constants.REGISTER_FAILURE, errors });
+            });
+
+        } else {
+            dispatch({ type: constants.REGISTER_FAILURE, errors });
+        }
+
+    },
+
+    mount: () => async (dispatch, getState) => {
+
+        dispatch({ type: constants.REGISTER_MOUNT });
+    },
 
 
-  
-  
-  };
+
+
+};

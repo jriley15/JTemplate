@@ -70,7 +70,7 @@ namespace JTemplate.Services
 
                 //send link to users email
                 //localhost/Auth/ConfirmEmail
-                //EmailHelper.Send("Activate email: http://localhost/api/Auth/ConfirmEmail?token="+token);
+                //EmailHelper.Send("Email Confirmation", "Activate email: http://localhost/api/Auth/ConfirmEmail?token="+token);
 
                 response.Success = true;
                 response.Message = "Successfully registered, Token: "+ token;
@@ -91,6 +91,10 @@ namespace JTemplate.Services
                 response.Success = true;
                 response.Auth = TokenHelper.Generate(user);
                 response.Message = "You successfully logged in as "+user.Email;
+
+                EmailHelper.Send("test", "test");
+                
+
             }
             else
             {

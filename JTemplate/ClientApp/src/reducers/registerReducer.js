@@ -10,10 +10,17 @@ const initialState = {
 export const reducer = (state, action) => {
     state = state || initialState;
 
+    if (action.type === constants.REGISTER_MOUNT) {
+        return {
+            initialState
+        };
+    }
+
     if (action.type === constants.REGISTER_REQUEST) {
         return {
             ...state,
-            loading: true
+            loading: true,
+            errors: []
         };
     }
 
