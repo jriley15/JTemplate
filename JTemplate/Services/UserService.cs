@@ -12,8 +12,8 @@ using System.Text;
 using System.Threading.Tasks;
 using JTemplate.Data.Dto.Login;
 using JTemplate.Data.Dto.Register;
-using JTemplate.Data.Dto.Email;
 using Microsoft.EntityFrameworkCore;
+using JTemplate.Data.Dto.Password;
 
 namespace JTemplate.Services
 {
@@ -24,11 +24,15 @@ namespace JTemplate.Services
 
         RegisterResponse Register(RegisterRequest request);
 
-        ConfirmEmailResponse ConfirmEmail(String token);
+        Response ConfirmEmail(String token);
 
+        Response ResendEmail(String email);
+
+        Response SendPasswordReset(String email);
 
         User GetUser(int userId);
 
+        Response ResetPassword(PasswordResetRequest request);
     }
     public class UserService : IUserService
     {
@@ -46,7 +50,7 @@ namespace JTemplate.Services
             RegisterResponse response = new RegisterResponse();
 
             //check if email is already in use
-            if (dbContext.Users.Any(user => user.Email == request.Email))
+            if (dbContext.Authentication.Any(user => user.Email == request.Email))
             {
                 response.Success = false;
                 response.AddError("Email", "Email already exists");
@@ -55,25 +59,31 @@ namespace JTemplate.Services
             {
 
                 //create user
-                User newUser = new User() {Email = request.Email, Password = PasswordHelper.HashPassword(request.Password), Verified = false, Role = "User" };
+                User newUser = new User() {Verified = false, Role = "User" };
 
                 //create profile
                 Profile newProfile = new Profile() { FirstName = request.FirstName, LastName = request.LastName, DateCreated  = DateTime.Now, DateModified = DateTime.Now};
-
                 newUser.Profile = newProfile;
+
+                Authentication newAuth = new Authentication() { Email = request.Email, Password = PasswordHelper.HashPassword(request.Password), Type = 0 };
+                newUser.Authentication = newAuth;
 
                 dbContext.Users.Add(newUser);
                 dbContext.SaveChanges();
 
                 //create email confirmation token
-                string token = TokenHelper.Generate(newUser).Token;
+                string token = TokenHelper.GenerateEmailConfirmToken(newUser);
 
                 //send link to users email
                 //localhost/Auth/ConfirmEmail
-                //EmailHelper.Send("Email Confirmation", "Activate email: http://localhost/api/Auth/ConfirmEmail?token="+token);
+                //http://localhost:3000/register
+
+                String body = "Email confirmation link: <a href='http://localhost:3000/emailConfirm?token=" + token + "'>Click here</a>";
+
+                EmailHelper.Send(newUser.Authentication.Email, "Email Confirmation", body);
 
                 response.Success = true;
-                response.Message = "Successfully registered, Token: "+ token;
+                response.Message = "Successfully registered";
             }
 
             return response;
@@ -84,16 +94,22 @@ namespace JTemplate.Services
 
             LoginResponse response = new LoginResponse();
 
-            User user = dbContext.Users.SingleOrDefault(u => u.Email == request.Email && PasswordHelper.VerifyPassword(request.Password, u.Password));
+            Authentication auth = dbContext.Authentication.Include(a => a.User).SingleOrDefault(a => a.Email == request.Email && PasswordHelper.VerifyPassword(request.Password, a.Password));
 
-            if (user != null)
+
+            if (auth != null && auth.User != null)
             {
-                response.Success = true;
-                response.Auth = TokenHelper.Generate(user);
-                response.Message = "You successfully logged in as "+user.Email;
+                if (auth.User.Verified)
+                {
+                    response.Success = true;
+                    response.Auth = new Auth(auth.UserId, auth.Email, TokenHelper.GenerateAccessToken(auth.User), TokenHelper.GenerateRefreshToken(auth.User));
+                    response.Message = "You successfully logged in as " + auth.Email;
 
-                EmailHelper.Send("test", "test");
-                
+                } else
+                {
+                    response.Success = false;
+                    response.AddError("*", "Email has not been confirmed");
+                }
 
             }
             else
@@ -110,14 +126,14 @@ namespace JTemplate.Services
             throw new NotImplementedException();
         }
 
-        public ConfirmEmailResponse ConfirmEmail(string token)
+        public Response ConfirmEmail(string token)
         {
 
-            ConfirmEmailResponse response = new ConfirmEmailResponse();
+            Response response = new Response();
 
             try
             {
-                int UserId = int.Parse(TokenHelper.ValidateAndDecode(token).Identity.Name);
+                int UserId = int.Parse(TokenHelper.ValidateAndDecodeEmailConfirmToken(token).Identity.Name);
                 User user = dbContext.Users.FirstOrDefault(u => u.UserId == UserId);
 
                 if (user != null)
@@ -139,13 +155,103 @@ namespace JTemplate.Services
                 else
                 {
                     response.Success = false;
-                    response.AddError("*", "Token is invalid or has expired");
+                    response.AddError("*", "Link is invalid or has expired");
                 }
             }
             catch (Exception e)
             {
                 response.Success = false;
-                response.AddError("*", "Token is invalid or has expired");
+                response.AddError("*", "Link is invalid or has expired");
+            }
+
+            return response;
+
+        }
+
+        public Response ResendEmail(string email)
+        {
+
+            Response response = new Response();
+
+            try
+            {
+                Authentication auth = dbContext.Authentication.Include(a => a.User).SingleOrDefault(a => a.Email == email);
+
+
+                if (auth != null && auth.User != null)
+                {
+                    if (auth.User.Verified)
+                    {
+                        response.Success = false;
+                        response.AddError("*", "Email already confirmed");
+                    }
+                    else
+                    {
+                        string token = TokenHelper.GenerateEmailConfirmToken(auth.User);
+
+                        String body = "Email confirmation link: <a href='http://localhost:3000/emailConfirm?token=" + token + "'>Click here</a>";
+                        EmailHelper.Send(auth.Email, "Email Confirmation", body);
+                        auth.LastEmail = DateTime.Now;
+                        dbContext.SaveChanges();
+
+                        response.Success = true;
+                        response.Message = "Email successfully sent";
+                    }
+                }
+                else
+                {
+                    response.Success = false;
+                    response.AddError("*", "Email doesn't exist in our system");
+                }
+            }
+            catch (Exception e)
+            {
+                response.Success = false;
+                response.AddError("*", "Email doesn't exist in our system");
+            }
+
+            return response;
+
+        }
+
+        public Response SendPasswordReset(string email)
+        {
+            Response response = new Response();
+
+            try
+            {
+                Authentication auth = dbContext.Authentication.Include(a => a.User).SingleOrDefault(a => a.Email == email);
+
+                if (auth != null && auth.User != null)
+                {
+                    if (DateTime.Now.Subtract(auth.LastEmail).TotalHours < 1)
+                    {
+                        response.Success = false;
+                        response.AddError("*", "Wait an hour to try this again");
+                    }
+                    else
+                    {
+                        string token = TokenHelper.GeneratePasswordResetToken(auth.User);
+
+                        String body = "Password reset link: <a href='http://localhost:3000/resetPassword?token=" + token + "'>Click here</a>";
+                        EmailHelper.Send(auth.Email, "Password Reset", body);
+                        auth.LastEmail = DateTime.Now;
+                        dbContext.SaveChanges();
+
+                        response.Success = true;
+                        response.Message = "Email successfully sent";
+                    }
+                }
+                else
+                {
+                    response.Success = false;
+                    response.AddError("*", "Email doesn't exist in our system");
+                }
+            }
+            catch (Exception e)
+            {
+                response.Success = false;
+                response.AddError("*", "Email doesn't exist in our system");
             }
 
             return response;
@@ -153,6 +259,8 @@ namespace JTemplate.Services
         }
 
 
+
+        //?????
         public User GetUser(int id)
         {
             var users = dbContext.Users.Include(u => u.Profile);
@@ -163,6 +271,53 @@ namespace JTemplate.Services
 
 
 
+        public Response ResetPassword(PasswordResetRequest request)
+        {
+
+            Response response = new Response();
+
+            try
+            {
+
+                ClaimsPrincipal claim = TokenHelper.ValidateAndDecodePasswordReset(request.Token);
+                int UserId = int.Parse(claim.Identity.Name);
+
+                Authentication auth = dbContext.Authentication.Include(a => a.User).SingleOrDefault(a => a.UserId == UserId);
+
+                if (auth != null)
+                {
+                    string passwordHash = claim.Identities.FirstOrDefault().Claims.Where(c => c.Type == ClaimTypes.Hash).Single().Value;
+
+                    //make sure password hasn't changed since token was issued
+                    if (HashHelper.GetStringSha256Hash(auth.Password) != passwordHash)
+                    {
+                        response.Success = false;
+                        response.AddError("*", "Password has been changed since this link was generated.");
+                    }
+                    else
+                    {
+                        auth.Password = PasswordHelper.HashPassword(request.Password);
+                        dbContext.SaveChanges();
+
+                        response.Success = true;
+                        response.Message = "Password successfully changed";
+                    }
+                }
+                else
+                {
+                    response.Success = false;
+                    response.AddError("*", "Link is invalid or has expired");
+                }
+            }
+            catch (Exception e)
+            {
+                response.Success = false;
+                response.AddError("*", "Link is invalid or has expired");
+            }
+
+            return response;
+
+        }
 
     }
 }

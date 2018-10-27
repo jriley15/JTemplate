@@ -1,6 +1,8 @@
 import constants from '../constants/registerConstants';
 import apiURL from '../constants/apiURL';
 import axios from 'axios';
+import { validateFields } from '../helpers/Validation';
+import { setupRequest } from '../helpers/Form';
 
 
 export const actionCreators = {
@@ -9,19 +11,10 @@ export const actionCreators = {
 
         dispatch({ type: constants.REGISTER_REQUEST });
 
-        let errors = [];
-
-        inputFields.forEach(inputField => {       
-            if (!inputField.value && inputField.required) {
-                errors.push({key: inputField.id, message: 'Required Field'});
-            } 
-        });
+        let errors = validateFields(inputFields);
         
         if (errors === undefined || errors.length === 0) {
-            let request = {};
-            inputFields.forEach(inputField => {       
-                request = {...request, [inputField.id]: inputField.value}
-            });
+            let request = setupRequest(inputFields);
 
             const url = apiURL + '/User/Register';
             await axios.post(url, request, {
@@ -38,7 +31,13 @@ export const actionCreators = {
 
             })
             .catch(function (error) {
-                errors = error.response.data.errors;
+
+                if (error.response) {
+                    errors = error.response.data.errors;
+                } else {
+                    errors.push({key: "*", message: "No response from server"});
+                }
+
                 dispatch({ type: constants.REGISTER_FAILURE, errors });
             });
 
@@ -48,11 +47,10 @@ export const actionCreators = {
 
     },
 
-    mount: () => async (dispatch, getState) => {
+    unmount: () => async(dispatch, getState) => {
 
-        dispatch({ type: constants.REGISTER_MOUNT });
-    },
-
+        dispatch({ type: constants.UNMOUNT });
+    }
 
 
 

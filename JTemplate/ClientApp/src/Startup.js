@@ -13,10 +13,18 @@ class Startup extends Component {
       //check if we have a token in local storage
       //will also need to verify the token and possibly refresh?
       this.props.getAuth();
+
+      //check if access token has expired
+
+      //if not, verify with api that access token is still valid
+
+      //if expired, use refresh token for new one
+
+
     }
 
     render() {
-      return (<div>{this.props.children}</div>);
+      return (<React.Fragment>{this.props.children}</React.Fragment>);
     }
 }
   

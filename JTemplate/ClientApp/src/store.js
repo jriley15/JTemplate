@@ -4,12 +4,16 @@ import { routerReducer, routerMiddleware } from 'react-router-redux';
 
 import authReducer  from './reducers/authReducer'
 import registerReducer  from './reducers/registerReducer'
+import emailReducer  from './reducers/emailReducer'
+import passwordReducer  from './reducers/passwordReducer'
 
 export default function configureStore(history, initialState) {
 
   const reducers = {
     auth: authReducer,
-    register: registerReducer
+    register: registerReducer,
+    email: emailReducer,
+    password: passwordReducer
   };
 
   const middleware = [

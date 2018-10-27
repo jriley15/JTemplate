@@ -53,12 +53,11 @@ class NavMenu extends React.Component {
     return (
       <header>
         <Navbar className="navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3" light >
-          <Container>
+
             <NavbarBrand href="/">JTemplate</NavbarBrand>
             <NavbarToggler onClick={this.toggle} className="mr-2" />
             <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={this.state.isOpen} navbar>
               <ul className="navbar-nav flex-grow">
-              
                 <NavItem>
                   <Link className="nav-link text-dark" to="/">Home</Link>
                 </NavItem>
@@ -70,7 +69,7 @@ class NavMenu extends React.Component {
                 </NavItem>
               </ul>
             </Collapse>
-          </Container>
+
         </Navbar>
       </header>
     );

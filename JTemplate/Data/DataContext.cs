@@ -10,9 +10,10 @@ namespace JTemplate.Data
     public class DataContext : DbContext
     {
 
-        //models
+        //tables
         public DbSet<User> Users { get; set; }
         public DbSet<Profile> Profiles { get; set; }
+        public DbSet<Authentication> Authentication { get; set; }
 
 
 

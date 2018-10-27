@@ -26,11 +26,11 @@ namespace JTemplate
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
-            services.AddDbContext<DataContext>(options => options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=JTemplate;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"));
+            services.AddDbContext<DataContext>(options => options.UseSqlServer("Server=den1.mssql1.gear.host;Database=jtemplate;User Id=jtemplate;Password=Lu03H-s6t!N8;"));
             services.AddMvc();
 
             //jwt secret
-            var key = Encoding.ASCII.GetBytes(TokenHelper.Key);
+            var key = Encoding.ASCII.GetBytes(TokenHelper.Access_Key);
 
             //jwt config
             services.AddAuthentication(x =>
@@ -100,8 +100,8 @@ namespace JTemplate
                 {
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
-            });
-            */
+            });*/
+            
 
         }
     }

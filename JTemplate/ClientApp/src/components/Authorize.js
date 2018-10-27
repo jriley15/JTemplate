@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { actionCreators } from '../actions/authActions';
-import { push } from 'react-router-redux'
 
 export function requireAnonymous(ChildComponent) {
     class Anonymous extends Component {

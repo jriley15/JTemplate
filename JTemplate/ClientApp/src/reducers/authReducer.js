@@ -55,7 +55,12 @@ export const reducer = (state, action) => {
         };
     }
 
-
+    if (action.type === constants.UNMOUNT) {
+        return {
+            ...state,
+            errors: []
+        };
+    }
 
     return state;
 };

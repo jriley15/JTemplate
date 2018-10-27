@@ -20,31 +20,26 @@ namespace JTemplate.Helpers
          * 
          */
 
-        private static string address = "donotreply@jordanriley.me";
+        private static string doNotReply = "donotreply@jordanriley.me";
 
-        public static void Send(string subject, string body)
+        public static void Send(string toAdress, string subject, string body)
         {
 
 
             // Replace sender@example.com with your "From" address. 
             // This address must be verified with Amazon SES.
-            String FROM = address;
-            String FROMNAME = "Sender Name";
+            String FROM = doNotReply;
+            String FROMNAME = "Jordan";
 
             // Replace recipient@example.com with a "To" address. If your account 
             // is still in the sandbox, this address must be verified.
-            String TO = "jordanr3@live.com";
+            String TO = toAdress;
 
             // Replace smtp_username with your Amazon SES SMTP user name.
             String SMTP_USERNAME = "AKIAJA3ZAVBFGMAUO7UA";
 
             // Replace smtp_password with your Amazon SES SMTP user name.
             String SMTP_PASSWORD = "Al7VUsk9jULMC2bSsAqp4i6nFGyevy1ur3ejXo7u0lqI";
-
-            // (Optional) the name of a configuration set to use for this message.
-            // If you comment out this line, you also need to remove or comment out
-            // the "X-SES-CONFIGURATION-SET" header below.
-            String CONFIGSET = "ConfigSet";
 
             // If you're using Amazon SES in a region other than US West (Oregon), 
             // replace email-smtp.us-west-2.amazonaws.com with the Amazon SES SMTP  
@@ -56,24 +51,14 @@ namespace JTemplate.Helpers
             // the connection.
             int PORT = 587;
 
-            // The subject line of the email
-            String SUBJECT =
-                "Amazon SES test (SMTP interface accessed using C#)";
-
-            // The body of the email
-            String BODY =
-                "<h1>Amazon SES Test</h1>" +
-                "<p>This email was sent through the " +
-                "<a href='https://aws.amazon.com/ses'>Amazon SES</a> SMTP interface " +
-                "using the .NET System.Net.Mail library.</p>";
 
             // Create and build a new MailMessage object
             MailMessage message = new MailMessage();
             message.IsBodyHtml = true;
             message.From = new MailAddress(FROM, FROMNAME);
             message.To.Add(new MailAddress(TO));
-            message.Subject = SUBJECT;
-            message.Body = BODY;
+            message.Subject = subject;
+            message.Body = body;
             // Comment or delete the next line if you are not using a configuration set
             //message.Headers.Add("X-SES-CONFIGURATION-SET", CONFIGSET);
 

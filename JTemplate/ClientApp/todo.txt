@@ -1,0 +1,61 @@
+
+initial server side render?
+
+
+SWITCH HOSTING TO AZURE 
+
+  sql?
+  email service?
+
+
+
+AUTHENTICATION
+
+  always check if current password in db matches jwt checksum to invalidate old password access tokens
+  add new table for keeping track of refresh tokens (id, token, expires)
+  new auth jwt {
+    user.Id
+    user.Role
+    user.PasswordCheckSum
+    expireDate (7 days)
+  }
+
+  refresh token system??
+  front end
+    add a check on startup component that checks if access token is invalid
+      if it is, sign user out and redirect them to login page
+
+    add a check on startup component that checks if access token is expired
+      if it is, use refresh token to grant a new one 
+
+  back end
+    always send refresh token to user with access token
+    when user sends refresh token, ensure password checksum matches with user for id in system
+      also ensure token isn't expired
+	
+  refresh jwt {
+    
+    user.Id,
+    user.PasswordCheckSum,
+    expireDate (10 days)
+    
+  }
+
+
+
+GOOGLE SIGN IN
+
+  query google server for auth code from front end
+  send auth code back to api
+  api uses auth code to get access token from google server
+  api uses access token to get email 
+  api checks if email is registered in our system
+    if not we create a user in our db with email and public info (name)
+      store google access token in db, also set account type to 1 (google oauth)
+
+    if it is, we return success and update the users access token in the db
+
+
+  add generic website signup as authorization type 0
+  add google oauth sign in as authorization type 1
+  add facebook oauth sign in as authorization type 2

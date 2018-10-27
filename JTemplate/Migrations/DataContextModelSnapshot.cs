@@ -19,6 +19,32 @@ namespace JTemplate.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("JTemplate.Data.Models.Authentication", b =>
+                {
+                    b.Property<int>("AuthenticationId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Email");
+
+                    b.Property<DateTime>("LastEmail");
+
+                    b.Property<string>("Password");
+
+                    b.Property<string>("Token");
+
+                    b.Property<int>("Type");
+
+                    b.Property<int>("UserId");
+
+                    b.HasKey("AuthenticationId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Authentication");
+                });
+
             modelBuilder.Entity("JTemplate.Data.Models.Profile", b =>
                 {
                     b.Property<int>("ProfileId")
@@ -49,10 +75,6 @@ namespace JTemplate.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Email");
-
-                    b.Property<string>("Password");
-
                     b.Property<string>("Role");
 
                     b.Property<bool>("Verified");
@@ -60,6 +82,14 @@ namespace JTemplate.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("JTemplate.Data.Models.Authentication", b =>
+                {
+                    b.HasOne("JTemplate.Data.Models.User", "User")
+                        .WithOne("Authentication")
+                        .HasForeignKey("JTemplate.Data.Models.Authentication", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("JTemplate.Data.Models.Profile", b =>

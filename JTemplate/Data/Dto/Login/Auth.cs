@@ -11,13 +11,16 @@ namespace JTemplate.Data.Dto.Login
 
         public string Email { get; set; }
 
-        public string Token { get; set; }
+        public string AccessToken { get; set; }
 
-        public Auth(int id, string email, string token)
+        public string RefreshToken { get; set; }
+
+        public Auth(int id, string email, string accessToken, string refreshToken)
         {
             Email = email;
             Id = id;
-            Token = token;
+            AccessToken = accessToken;
+            RefreshToken = refreshToken;
         }
 
     }

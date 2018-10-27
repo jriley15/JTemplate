@@ -10,12 +10,6 @@ const initialState = {
 export const reducer = (state, action) => {
     state = state || initialState;
 
-    if (action.type === constants.REGISTER_MOUNT) {
-        return {
-            initialState
-        };
-    }
-
     if (action.type === constants.REGISTER_REQUEST) {
         return {
             ...state,
@@ -39,6 +33,11 @@ export const reducer = (state, action) => {
             errors: action.errors,
             success: false,
             loading: false
+        };
+    }
+    if (action.type === constants.UNMOUNT) {
+        return {
+            initialState
         };
     }
 

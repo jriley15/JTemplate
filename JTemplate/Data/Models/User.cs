@@ -11,10 +11,6 @@ namespace JTemplate.Data.Models
     {
         public int UserId { get; set; }
 
-        public string Email { get; set; }
-
-        public string Password { get; set; }
-
         public bool Verified { get; set; }
 
         public string Role { get; set; }
@@ -23,6 +19,8 @@ namespace JTemplate.Data.Models
         public Profile Profile { get; set; }
 
 
+        //child authentication
+        public Authentication Authentication { get; set; }
 
     }
 }
