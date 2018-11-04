@@ -6,8 +6,6 @@ import { validateFields } from '../helpers/Validation';
 import { setupRequest } from '../helpers/Form';
 
 
-const AUTH_KEY = 'AUTH';
-
 export const actionCreators = {
 
 
@@ -32,8 +30,10 @@ export const actionCreators = {
 
                 dispatch({ type: constants.LOGIN_SUCCESS, auth });
                 dispatch(push('/'));
+
                 //store auth in localstorage
-                localStorage.setItem(AUTH_KEY, auth);
+                storeAuth(auth);
+                
 
             })
             .catch(function (error) {
@@ -56,7 +56,8 @@ export const actionCreators = {
 
     getAuth: () => async (dispatch, getState) => {
 
-        const auth = localStorage.getItem(AUTH_KEY);
+        const auth = getAuth();
+
 
         if (auth != null) {
             dispatch({ type: constants.AUTH_FOUND, auth });
@@ -67,7 +68,8 @@ export const actionCreators = {
 
     logout: () => async (dispatch, getState) => {
 
-        localStorage.removeItem(AUTH_KEY);
+        deleteAuth();
+
         dispatch({ type: constants.AUTH_REMOVED });
         dispatch(push('/'));
 
@@ -80,3 +82,40 @@ export const actionCreators = {
     }
 
 };
+
+
+
+const storeAuth = (auth) => {
+
+    localStorage.setItem(constants.EMAIL_ADDRESS, auth.email);
+    localStorage.setItem(constants.ACCESS_TOKEN, auth.accessToken);
+    localStorage.setItem(constants.REFRESH_TOKEN, auth.refreshToken);
+    localStorage.setItem(constants.USER_ID, auth.id);
+
+}
+
+const getAuth = () => {
+
+    var auth = {};
+
+    auth.email = localStorage.getItem(constants.EMAIL_ADDRESS);
+    auth.accessToken = localStorage.getItem(constants.ACCESS_TOKEN);
+    auth.refreshToken = localStorage.getItem(constants.REFRESH_TOKEN);
+    auth.id = localStorage.getItem(constants.USER_ID);
+
+    for (let key in auth) {
+        if (auth[key] == null || auth[key] == undefined) {
+            return null;
+        }
+    }
+    
+    return auth;
+}
+
+const deleteAuth = () => {
+    
+    localStorage.removeItem(constants.EMAIL_ADDRESS);
+    localStorage.removeItem(constants.ACCESS_TOKEN);
+    localStorage.removeItem(constants.REFRESH_TOKEN);
+    localStorage.removeItem(constants.USER_ID);
+}

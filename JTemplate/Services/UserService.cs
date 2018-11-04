@@ -24,15 +24,17 @@ namespace JTemplate.Services
 
         RegisterResponse Register(RegisterRequest request);
 
-        Response ConfirmEmail(String token);
+        Response ConfirmEmail(string token);
 
-        Response ResendEmail(String email);
+        Response ResendEmail(string email);
 
-        Response SendPasswordReset(String email);
+        Response SendPasswordReset(string email);
 
         User GetUser(int userId);
 
         Response ResetPassword(PasswordResetRequest request);
+
+        RefreshResponse RefreshToken(string token);
     }
     public class UserService : IUserService
     {
@@ -319,5 +321,48 @@ namespace JTemplate.Services
 
         }
 
+        public RefreshResponse RefreshToken(string token)
+        {
+
+            RefreshResponse response = new RefreshResponse();
+
+            try
+            {
+                ClaimsPrincipal claim = TokenHelper.ValidateAndDecodeRefreshToken(token);
+                int UserId = int.Parse(claim.Identity.Name);
+
+                Authentication auth = dbContext.Authentication.Include(a => a.User).SingleOrDefault(a => a.UserId == UserId);
+
+                if (auth != null)
+                {
+                    string passwordHash = claim.Identities.FirstOrDefault().Claims.Where(c => c.Type == ClaimTypes.Hash).Single().Value;
+
+                    //make sure password hasn't changed since token was issued
+                    if (HashHelper.GetStringSha256Hash(auth.Password) != passwordHash)
+                    {
+                        response.Success = false;
+                        response.AddError("*", "Password has been changed since this refresh token was generated.");
+                    }
+                    else
+                    {
+                        response.Success = true;
+                        response.Message = "Access token renewed";
+                    }
+                }
+                else
+                {
+                    response.Success = false;
+                    response.AddError("*", "Link is invalid or has expired");
+                }
+            }
+            catch (Exception e)
+            {
+                response.Success = false;
+                response.AddError("*", "Refresh token invalid or expired");
+            }
+
+
+            return response;
+        }
     }
 }

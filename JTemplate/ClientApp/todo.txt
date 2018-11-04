@@ -59,3 +59,44 @@ GOOGLE SIGN IN
   add generic website signup as authorization type 0
   add google oauth sign in as authorization type 1
   add facebook oauth sign in as authorization type 2
+
+
+
+  STRUCTURE REDO
+
+    src (boot highest order components)
+
+    - index.js
+    - app.js
+
+    store (stores for state (mobX??))
+
+      - userStore
+      - productStore
+
+    container (navigation defined, main pages)
+
+      - login
+      - register
+      - products
+
+    components (smaller re-usable components that containers render props with)
+
+      - inputField
+      - errorDisplay
+      - product
+      - loadingButton	
+      - formBox
+      
+    services (api calls)
+      
+      - userService
+      - productService
+
+    constants (url's and config stuff)
+
+      - apiConstants
+    
+    Helpers (helper function classes)
+
+      - ErrorHelper

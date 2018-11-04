@@ -151,6 +151,27 @@ namespace JTemplate.Controllers
             return BadRequest(ModelState.Errors());
         }
 
+        [AllowAnonymous]
+        [HttpGet("[action]")]
+        public IActionResult RefreshToken([FromQuery]TokenRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+
+                RefreshResponse response = userService.RefreshToken(request.Token);
+
+                if (response.Success)
+                {
+                    return Ok(response);
+                }
+
+                return BadRequest(response.AllErrors());
+            }
+
+            return BadRequest(ModelState.Errors());
+        }
+
+
 
     }
 }
