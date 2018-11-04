@@ -7,7 +7,8 @@ const initialState = {
     authenticated: false,
     loggingIn: false,
     auth: {},
-    errors: []
+    errors: [],
+    refreshing: false
 };
 
 export const reducer = (state, action) => {
@@ -61,6 +62,35 @@ export const reducer = (state, action) => {
             errors: []
         };
     }
+
+    
+    if (action.type === constants.AUTH_REFRESH_REQUEST) {
+        return {
+            ...state,
+            errors: [],
+            refreshing: true
+        };
+    }
+
+    if (action.type === constants.AUTH_REFRESH_SUCCESS) {
+        return {
+            ...state,
+            auth: action.auth,
+            authenticated: true,
+            errors: [],
+            refreshing: false
+        };
+    }
+
+    if (action.type === constants.AUTH_REFRESH_FAILURE) {
+        return {
+            ...state,
+            errors: action.errors,
+            authenticated: false,
+            refreshing: false
+        };
+    }
+
 
     return state;
 };

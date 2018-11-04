@@ -35,8 +35,8 @@ namespace JTemplate.Helpers
                     new Claim(ClaimTypes.Role, user.Role),
                     //new Claim(ClaimTypes.Hash, HashHelper.GetStringSha256Hash(user.Authentication.Password)),
                 }),
-                //Expires = DateTime.UtcNow.AddDays(7),
-                Expires = DateTime.UtcNow.AddSeconds(10),
+                Expires = DateTime.UtcNow.AddDays(7),
+                //Expires = DateTime.UtcNow.AddSeconds(5),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);

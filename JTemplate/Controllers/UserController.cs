@@ -162,7 +162,7 @@ namespace JTemplate.Controllers
 
                 if (response.Success)
                 {
-                    return Ok(response);
+                    return Ok(response.Auth);
                 }
 
                 return BadRequest(response.AllErrors());

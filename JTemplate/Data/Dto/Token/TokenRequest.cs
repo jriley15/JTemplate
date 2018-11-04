@@ -9,7 +9,6 @@ namespace JTemplate.Data.Dto.Token
     public class TokenRequest
     {
         [Required]
-        [StringLength(300)]
         public string Token { get; set; }
 
 

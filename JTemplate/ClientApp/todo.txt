@@ -20,28 +20,6 @@ AUTHENTICATION
     expireDate (7 days)
   }
 
-  refresh token system??
-  front end
-    add a check on startup component that checks if access token is invalid
-      if it is, sign user out and redirect them to login page
-
-    add a check on startup component that checks if access token is expired
-      if it is, use refresh token to grant a new one 
-
-  back end
-    always send refresh token to user with access token
-    when user sends refresh token, ensure password checksum matches with user for id in system
-      also ensure token isn't expired
-	
-  refresh jwt {
-    
-    user.Id,
-    user.PasswordCheckSum,
-    expireDate (10 days)
-    
-  }
-
-
 
 GOOGLE SIGN IN
 

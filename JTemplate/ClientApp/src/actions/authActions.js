@@ -33,8 +33,6 @@ export const actionCreators = {
 
                 //store auth in localstorage
                 storeAuth(auth);
-                
-
             })
             .catch(function (error) {
 
@@ -79,6 +77,50 @@ export const actionCreators = {
     unmount: () => async(dispatch, getState) => {
 
         dispatch({ type: constants.UNMOUNT });
+    },
+
+
+    refreshAuth: (refreshToken) => async(dispatch, getState) => {
+
+        console.log('refreshing auth');
+
+        dispatch({ type: constants.AUTH_REFRESH_REQUEST });
+        deleteAuth();
+
+        let errors = [];
+
+        if (refreshToken) {
+            const url = apiURL + '/User/RefreshToken';
+            await axios.get(url, {params: {
+                
+                Token: refreshToken
+
+            }}).then(function (response) {
+
+                const auth = response.data;
+                
+                storeAuth(auth);
+
+                dispatch({ type: constants.AUTH_REFRESH_SUCCESS, auth });
+                console.log('success');
+            })
+            .catch(function (error) {
+                if (error.response) {
+                    errors = error.response.data.errors;
+                    console.log('error: ',errors);
+                } else {
+                    errors.push({key: "*", message: "No response from server"});
+                }
+
+                dispatch({ type: constants.AUTH_REFRESH_FAILURE, errors });
+            });
+        } else {
+            errors.push({key: "*", message: "No token provided"});
+            dispatch({ type: constants.AUTH_REFRESH_FAILURE, errors });
+        }
+
+
+
     }
 
 };

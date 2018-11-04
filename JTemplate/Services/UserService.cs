@@ -345,6 +345,8 @@ namespace JTemplate.Services
                     }
                     else
                     {
+
+                        response.Auth = new Auth(auth.UserId, auth.Email, TokenHelper.GenerateAccessToken(auth.User), TokenHelper.GenerateRefreshToken(auth.User));
                         response.Success = true;
                         response.Message = "Access token renewed";
                     }
