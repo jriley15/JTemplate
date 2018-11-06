@@ -64,13 +64,33 @@ export const actionCreators = {
     },
 
 
-    logout: () => async (dispatch, getState) => {
+    logout: (accessToken) => async (dispatch, getState) => {
+
+        /*let errors = [];
+        const url = apiURL + '/User/Logout';
+        await axios.get(url, {params: {
+            
+            Token: accessToken
+
+        }}).then(function (response) {
+
+            console.log('Logged out');
+        })
+        .catch(function (error) {
+            if (error.response) {
+                errors = error.response.data.errors;
+                console.log('error: ',errors);
+            } else {
+                errors.push({key: "*", message: "No response from server"});
+            }
+
+            console.log('Failed to logout: ',errors);
+        });*/
+
 
         deleteAuth();
-
         dispatch({ type: constants.AUTH_REMOVED });
         dispatch(push('/'));
-
 
     },
 
@@ -118,9 +138,46 @@ export const actionCreators = {
             errors.push({key: "*", message: "No token provided"});
             dispatch({ type: constants.AUTH_REFRESH_FAILURE, errors });
         }
+    },
 
+    googleLogin: token => async (dispatch, getState) => {
 
+        dispatch({ type: constants.LOGIN_REQUEST });
 
+        let errors = [];
+
+        if (token) {
+
+            const url = apiURL + '/User/GoogleLogin';
+
+            await axios.get(url, {params: {
+                
+                Token: token
+
+            }}).then(function (response) {
+                const auth = response.data;
+
+                dispatch({ type: constants.LOGIN_SUCCESS, auth });
+                dispatch(push('/'));
+
+                //store auth in localstorage
+                storeAuth(auth);
+            })
+            .catch(function (error) {
+
+                if (error.response) {
+                    errors = error.response.data.errors;
+                } else {
+                    errors.push({key: "*", message: "No response from server"});
+                }
+
+                dispatch({ type: constants.LOGIN_FAILURE, errors });
+             });
+
+        } else {
+            dispatch({ type: constants.LOGIN_FAILURE, errors });
+        }
+   
     }
 
 };

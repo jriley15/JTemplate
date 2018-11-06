@@ -15,22 +15,30 @@ namespace JTemplate
 {
     public class Startup
     {
+
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
-            services.AddDbContext<DataContext>(options => options.UseSqlServer("Server=den1.mssql1.gear.host;Database=jtemplate;User Id=jtemplate;Password=Lu03H-s6t!N8;"));
+
+            //services.AddDbContext<DataContext>(options => options.UseSqlServer("Server=den1.mssql1.gear.host;Database=jtemplate;User Id=jtemplate;Password=Lu03H-s6t!N8;"));
+            services.AddDbContext<DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Database")));
+
             services.AddMvc();
 
             //jwt secret
-            var key = Encoding.ASCII.GetBytes(TokenHelper.Access_Key);
+            var key = Encoding.ASCII.GetBytes(Configuration.GetSection("Keys")["Access_Key"]);
+            TokenHelper.Access_Key = Configuration.GetSection("Keys")["Access_Key"];
+            TokenHelper.Email_Key = Configuration.GetSection("Keys")["Email_Key"];
+            TokenHelper.Refresh_Key = Configuration.GetSection("Keys")["Refresh_Key"];
+            TokenHelper.Password_Reset_Key = Configuration.GetSection("Keys")["Password_Reset_Key"];
 
             //jwt config
             services.AddAuthentication(x =>

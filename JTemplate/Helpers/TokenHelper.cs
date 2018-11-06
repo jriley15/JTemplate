@@ -14,13 +14,13 @@ namespace JTemplate.Helpers
 {
     public class TokenHelper
     {
-        public static String Access_Key = "#@%@%@!!!authenticationtoken~!!@$#^$@%@$!9284908njk1lkjasklahdy87712031@#!$%@%";
+        public static string Access_Key { get; set; }
 
-        public static String Email_Key = "#@%234234323545345$#^$@%@$emailtoken!9284908njk1lkjasklahdy87712031@#!$%@%";
+        public static string Email_Key { get; set; }
 
-        public static String Refresh_Key = "#@%234234323545345$#^$3453456$%$@#$@#refreshtoken$@%#^#^$%12031@#!$%@%";
+        public static string Refresh_Key { get; set; }
 
-        public static String Password_Reset_Key = "#@%23423432354533445$#^$3453456$%$2342434@#$@#refreshtoken$@%#^2#^$%12031@#!$%@%";
+        public static string Password_Reset_Key { get; set; }
 
 
         public static String GenerateAccessToken(User user)

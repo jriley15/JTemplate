@@ -32,7 +32,7 @@ export default (inputField, component) => {
     }
     if (inputField.type != 'hidden') {
       return (
-        <FormControl margin="normal" required={inputField.required} fullWidth error={error} key={inputField.id}>
+        <FormControl required={inputField.required} fullWidth error={error} key={inputField.id}>
           <InputLabel htmlFor={inputField.id}>{inputField.name}</InputLabel>
           <Input
             name={inputField.name}

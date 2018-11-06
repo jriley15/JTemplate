@@ -171,6 +171,26 @@ namespace JTemplate.Controllers
             return BadRequest(ModelState.Errors());
         }
 
+        [AllowAnonymous]
+        [HttpGet("[action]")]
+        public IActionResult GoogleLogin([FromQuery]TokenRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+
+                LoginResponse response = userService.GoogleLogin(request.Token);
+
+                if (response.Success)
+                {
+                    return Ok(response.Auth);
+                }
+
+                return BadRequest(response.AllErrors());
+            }
+
+            return BadRequest(ModelState.Errors());
+        }
+
 
 
     }

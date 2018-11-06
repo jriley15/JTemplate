@@ -19,6 +19,10 @@ import pink from '@material-ui/core/colors/pink';
 import { Link } from 'react-router-dom';
 import Grid from '@material-ui/core/Grid';
 import { containsError } from "../helpers/Error";
+import Divider from '@material-ui/core/Divider';
+import OAuth from './OAuth';
+
+
 
 
 class Login extends Component {
@@ -67,7 +71,7 @@ class Login extends Component {
   renderLoginButton() {
     const { classes } = this.props;
     if (this.props.loggingIn) {
-      return (    
+      return (
         <FormControl fullWidth>
           <CircularProgress className={classes.progress} size={50} />
         </FormControl>
@@ -75,16 +79,17 @@ class Login extends Component {
       );
     } else {
       return (
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            className={classes.submit}
-            onClick={this.submitLogin}
-          >
-            Sign in
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          color="primary"
+          className={classes.submit}
+          onClick={this.submitLogin}
+        >
+          Sign in
           </Button>
+          
       );
     }
   }
@@ -101,6 +106,8 @@ class Login extends Component {
 
     return null;
   }
+
+  
 
   render() {
     const { classes } = this.props;
@@ -119,7 +126,7 @@ class Login extends Component {
             {this.renderCustomErrors()}
 
             <form className={classes.form}>
-              
+
               {this.state.inputFields.map(inputField => (
                 renderInputField(inputField, this)
               ))}
@@ -130,11 +137,17 @@ class Login extends Component {
               <Typography variant="body2" color="primary" paragraph>
                 <Link to="/forgotPassword">Forgot Password?</Link>
               </Typography>
-              
+
 
 
               {this.renderLoginButton()}
             </form>
+
+            <Divider className={classes.divider}/>
+            
+            <OAuth/>      
+
+
           </Paper>
         </main>
       </React.Fragment>
@@ -170,8 +183,14 @@ const styles = theme => ({
     width: '100%', // Fix IE 11 issue.
     marginTop: theme.spacing.unit,
   },
-  submit: {
+  divider: {
     marginTop: theme.spacing.unit * 3,
+    width: '80%', 
+    marginBottom: theme.spacing.unit * 3,
+
+  },
+  submit: {
+    marginTop: theme.spacing.unit,
   },
   progress: {
     marginLeft: 'auto',

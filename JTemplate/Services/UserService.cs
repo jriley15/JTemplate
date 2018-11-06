@@ -14,12 +14,16 @@ using JTemplate.Data.Dto.Login;
 using JTemplate.Data.Dto.Register;
 using Microsoft.EntityFrameworkCore;
 using JTemplate.Data.Dto.Password;
+using Google.Apis.Auth;
 
 namespace JTemplate.Services
 {
     public interface IUserService
     {
         LoginResponse Login(LoginRequest request);
+
+        LoginResponse GoogleLogin(string token);
+
         void Logout();
 
         RegisterResponse Register(RegisterRequest request);
@@ -29,8 +33,6 @@ namespace JTemplate.Services
         Response ResendEmail(string email);
 
         Response SendPasswordReset(string email);
-
-        User GetUser(int userId);
 
         Response ResetPassword(PasswordResetRequest request);
 
@@ -101,16 +103,24 @@ namespace JTemplate.Services
 
             if (auth != null && auth.User != null)
             {
-                if (auth.User.Verified)
+                if (auth.Type == 0)
                 {
-                    response.Success = true;
-                    response.Auth = new Auth(auth.UserId, auth.Email, TokenHelper.GenerateAccessToken(auth.User), TokenHelper.GenerateRefreshToken(auth.User));
-                    response.Message = "You successfully logged in as " + auth.Email;
+                    if (auth.User.Verified)
+                    {
+                        response.Success = true;
+                        response.Auth = new Auth(auth.UserId, auth.Email, TokenHelper.GenerateAccessToken(auth.User), TokenHelper.GenerateRefreshToken(auth.User));
+                        response.Message = "You successfully logged in as " + auth.Email;
 
+                    }
+                    else
+                    {
+                        response.Success = false;
+                        response.AddError("*", "Email has not been confirmed");
+                    }
                 } else
                 {
                     response.Success = false;
-                    response.AddError("*", "Email has not been confirmed");
+                    response.AddError("*", "Account was registered with an external service");
                 }
 
             }
@@ -172,13 +182,11 @@ namespace JTemplate.Services
 
         public Response ResendEmail(string email)
         {
-
             Response response = new Response();
 
             try
             {
                 Authentication auth = dbContext.Authentication.Include(a => a.User).SingleOrDefault(a => a.Email == email);
-
 
                 if (auth != null && auth.User != null)
                 {
@@ -262,25 +270,12 @@ namespace JTemplate.Services
 
 
 
-        //?????
-        public User GetUser(int id)
-        {
-            var users = dbContext.Users.Include(u => u.Profile);
-
-            return users.FirstOrDefault(u => u.UserId == id);
-
-        }
-
-
-
         public Response ResetPassword(PasswordResetRequest request)
         {
-
             Response response = new Response();
 
             try
             {
-
                 ClaimsPrincipal claim = TokenHelper.ValidateAndDecodePasswordReset(request.Token);
                 int UserId = int.Parse(claim.Identity.Name);
 
@@ -361,6 +356,76 @@ namespace JTemplate.Services
             {
                 response.Success = false;
                 response.AddError("*", "Refresh token invalid or expired");
+            }
+
+
+            return response;
+        }
+
+        public LoginResponse GoogleLogin(string token)
+        {
+
+            LoginResponse response = new LoginResponse();
+
+            try
+            {
+                var payload = GoogleJsonWebSignature.ValidateAsync(token, new GoogleJsonWebSignature.ValidationSettings()).Result;
+
+                if (payload != null)
+                {
+                    Authentication auth = dbContext.Authentication.Include(a => a.User).SingleOrDefault(a => a.Email == payload.Email);
+
+                    if (auth != null)
+                    {
+                        if (auth.Type == 1)
+                        {
+                            //sign in, success
+                            response.Success = true;
+                            response.Auth = new Auth(auth.UserId, auth.Email, TokenHelper.GenerateAccessToken(auth.User), TokenHelper.GenerateRefreshToken(auth.User));
+                            response.Message = "You successfully logged in as " + auth.Email;
+
+                            auth.Token = token;
+                            dbContext.SaveChanges();
+
+                        }
+                        else
+                        {
+                            response.Success = false;
+                            response.AddError("*", "You cannot use Google to sign in to this account");
+                        }
+                    }
+                    else
+                    {
+                        //email doesn't exist, create account for user with type 1
+                        //create user
+                        User newUser = new User() { Verified = true, Role = "User" };
+
+                        //create profile
+                        Profile newProfile = new Profile() { FirstName = payload.GivenName, LastName = payload.FamilyName, DateCreated = DateTime.Now, DateModified = DateTime.Now };
+                        newUser.Profile = newProfile;
+
+                        Authentication newAuth = new Authentication() { Email = payload.Email, Password = PasswordHelper.HashPassword(payload.Email), Type = 1, Token = token };
+                        newUser.Authentication = newAuth;
+
+                        dbContext.Users.Add(newUser);
+                        dbContext.SaveChanges();
+
+                        response.Success = true;
+                        response.Auth = new Auth(newAuth.UserId, newAuth.Email, TokenHelper.GenerateAccessToken(newAuth.User), TokenHelper.GenerateRefreshToken(newAuth.User));
+                        response.Message = "You successfully logged in as " + newAuth.Email;
+
+                    }
+                }
+                else
+                {
+                    response.Success = false;
+                    response.AddError("*", "Failed to sign in with Google");
+                }
+            }
+            catch (Exception e)
+            {
+                response.Success = false;
+                response.AddError("*", "Failed to sign in with Google");
             }
 
 

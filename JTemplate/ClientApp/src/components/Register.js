@@ -19,6 +19,9 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import pink from '@material-ui/core/colors/pink';
 import green from '@material-ui/core/colors/green';
+import { Link } from 'react-router-dom';
+import Divider from '@material-ui/core/Divider';
+import OAuth from './OAuth';
 
 class Register extends Component {
 
@@ -115,9 +118,16 @@ class Register extends Component {
                 ))}
 
                 {this.renderSubmitButton()}
-
               </form>
+              <Typography variant="body2" paragraph>
+                  Already have an account? Sign in <Link to="/login">here</Link> 
+              </Typography>
+              <Divider className={classes.divider}/>
+            
+              <OAuth/>
+
             </Paper>
+
           </main>
         </React.Fragment>
 
@@ -200,10 +210,17 @@ const styles = theme => ({
   },
   submit: {
     marginTop: theme.spacing.unit * 3,
+    marginBottom: theme.spacing.unit
   },
   progress: {
     marginLeft: 'auto',
     marginRight: 'auto',
+  },
+  divider: {
+    marginTop: theme.spacing.unit,
+    width: '80%', 
+    marginBottom: theme.spacing.unit * 3,
+
   }
 });
 
